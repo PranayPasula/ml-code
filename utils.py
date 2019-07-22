@@ -32,19 +32,19 @@ from sklearn.decomposition import PCA
 #         standardize  (set to true to standardize columns so that each has
 #                       0 mean and unit variance)
 
-def pca(df, co_var=0.9, co_feat=None, standardize=True):
+def pca_transform(df, co_var=0.9, co_feat=None, standardize=True):
     
     if standardize == True: df = standardize_features(df)
     
     if co_feat == None: co_feat = df.shape[1]
-    pca_0 = PCA(n_components=co_feat)
-    pca_0.fit(df)
+    pca = PCA(n_components=co_feat)
+    pca.fit(df)
     
     # find the number of principal components needed to explain
     # the specified cutoff variance
     n_component = 0
     var_sum = 0
-    for var in pca_0.explained_variance_ratio_:
+    for var in pca.explained_variance_ratio_:
         n_component += 1
         var_sum += var
         if var_sum > min(co_var, 1.0) or n_component >= co_feat: break
@@ -55,13 +55,13 @@ def pca(df, co_var=0.9, co_feat=None, standardize=True):
     for pc_num in range(n_component):
         df_new[f'pc_{pc_num}'] = np.zeros(df.shape[0])
         for weight_num in range(df.shape[1]):
-            df_new[f'pc_{pc_num}'] += pca_0.components_[pc_num, weight_num] * df.iloc[:, weight_num]
+            df_new[f'pc_{pc_num}'] += pca.components_[pc_num, weight_num] * df.iloc[:, weight_num]
         
     print(f'Number of principal components: {n_component}')
     print(f'Percent of total variance explained: {var_sum}')
     
     x = range(n_component)
-    y = pca_0.explained_variance_ratio_[0:n_component]
+    y = pca.explained_variance_ratio_[0:n_component]
     plt.bar(x, y)
     plt.title('% of total variance explained by each principal component returned')
     plt.xlabel('Principal components')
